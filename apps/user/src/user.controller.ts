@@ -1,8 +1,9 @@
-import { Body, Controller, Inject, Post } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Post } from '@nestjs/common';
 import { UserService } from './user.service';
 import { RegisterUserDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
+import { SkipAuth } from '@app/common/custom.decorator';
 
 @Controller('user')
 export class UserController {
@@ -16,7 +17,7 @@ export class UserController {
     const user = await this.userService.login(loginDto);
     const token = this.jwtService.sign(
       {
-        id: user.id,
+        userId: user.id,
         username: user.username,
       },
       {
@@ -29,5 +30,16 @@ export class UserController {
   @Post('register')
   register(@Body() registerDto: RegisterUserDto) {
     return this.userService.register(registerDto);
+  }
+
+  @SkipAuth()
+  @Get('a')
+  a() {
+    return 'a';
+  }
+
+  @Get('b')
+  b() {
+    return 'b';
   }
 }

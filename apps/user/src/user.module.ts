@@ -3,6 +3,8 @@ import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { PrismaModule } from '@app/prisma';
 import { JwtModule } from '@nestjs/jwt';
+import { APP_GUARD } from '@nestjs/core';
+import { AuthGuard } from '@app/common';
 
 @Module({
   imports: [
@@ -11,7 +13,7 @@ import { JwtModule } from '@nestjs/jwt';
       global: true,
       useFactory() {
         return {
-          secret: '',
+          secret: 'astrox',
           signOptions: {
             expiresIn: '30m',
           },
@@ -20,6 +22,12 @@ import { JwtModule } from '@nestjs/jwt';
     }),
   ],
   controllers: [UserController],
-  providers: [UserService],
+  providers: [
+    UserService,
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+  ],
 })
 export class UserModule {}
