@@ -1,11 +1,20 @@
 import { PrismaService } from '@app/prisma';
-import { Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { RegisterUserDto } from './dto/register.dto';
+import { genSaltAndHashPwd } from './utils';
 
 @Injectable()
 export class UserService {
   @Inject(PrismaService)
   private prisma: PrismaService;
+
+  private logger = new Logger();
 
   async create(data: Prisma.UserCreateInput) {
     return await this.prisma.user.create({
@@ -16,7 +25,40 @@ export class UserService {
     });
   }
 
-  getHello(): string {
-    return 'Hello World!';
+  async register(registerDto: RegisterUserDto) {
+    // 1. 根据username查找库中用户
+    const existUser = await this.prisma.user.findUnique({
+      where: {
+        username: registerDto.username,
+      },
+    });
+    // 2. 已存在则提示
+    if (existUser) {
+      throw new BadRequestException('用户已存在');
+    }
+
+    try {
+      // 3. 密码加密处理
+      const cryptoPassword = genSaltAndHashPwd(registerDto.password);
+      console.log(cryptoPassword);
+
+      // 4. 创建用户
+      return await this.prisma.user.create({
+        data: {
+          username: registerDto.username,
+          password: cryptoPassword,
+          email: registerDto.email,
+        },
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          createTime: true,
+        },
+      });
+    } catch (error) {
+      this.logger.error(error, UserService);
+      throw new BadRequestException('注册失败');
+    }
   }
 }
