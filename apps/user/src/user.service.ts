@@ -5,6 +5,7 @@ import {
   Injectable,
   Logger,
 } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { Prisma } from '@prisma/client';
 import { RegisterUserDto } from './dto/register.dto';
 import { comparePwdByHash, genSaltAndHashPwd } from './utils';
@@ -15,6 +16,9 @@ import { HttpExceptionMsg } from '@app/common/exception-msg';
 export class UserService {
   @Inject(PrismaService)
   private prisma: PrismaService;
+
+  @Inject(JwtService)
+  private jwtService: JwtService;
 
   private logger = new Logger();
 
@@ -80,7 +84,13 @@ export class UserService {
       );
     }
 
-    delete existUser.password;
-    return existUser;
+    const payload = {
+      userId: existUser.id,
+      username: existUser.username,
+    };
+    const token = await this.jwtService.signAsync(payload);
+    return {
+      token,
+    };
   }
 }
