@@ -7,6 +7,8 @@ import {
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { Request, Response } from 'express';
+import { HttpExceptionMsg } from './exception-msg';
+import { SKIP_AUTH } from './constants';
 
 interface JwtUserData {
   userId: number;
@@ -27,7 +29,7 @@ export class AuthGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const skipAuth = this.reflector.getAllAndOverride<boolean>('skip-auth', [
+    const skipAuth = this.reflector.getAllAndOverride<boolean>(SKIP_AUTH, [
       context.getHandler(),
       context.getClass(),
     ]);
@@ -39,7 +41,7 @@ export class AuthGuard implements CanActivate {
 
     const token = this.extractTokenFromHeader(request);
     if (!token) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException(HttpExceptionMsg.TOKEN_NOT_FOUND);
     }
 
     try {
@@ -60,7 +62,7 @@ export class AuthGuard implements CanActivate {
         ),
       );
     } catch (error) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException(HttpExceptionMsg.TOKEN_INVALID);
     }
     return true;
   }

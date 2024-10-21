@@ -9,6 +9,7 @@ import { Prisma } from '@prisma/client';
 import { RegisterUserDto } from './dto/register.dto';
 import { comparePwdByHash, genSaltAndHashPwd } from './utils';
 import { LoginDto } from './dto/login.dto';
+import { HttpExceptionMsg } from '@app/common/exception-msg';
 
 @Injectable()
 export class UserService {
@@ -35,13 +36,12 @@ export class UserService {
     });
     // 2. 已存在则提示
     if (existUser) {
-      throw new BadRequestException('用户已存在');
+      throw new BadRequestException(HttpExceptionMsg.USER_EXIST);
     }
 
     try {
       // 3. 密码加密处理
       const cryptoPassword = genSaltAndHashPwd(registerDto.password);
-      console.log(cryptoPassword);
 
       // 4. 创建用户
       return await this.prisma.user.create({
@@ -59,7 +59,7 @@ export class UserService {
       });
     } catch (error) {
       this.logger.error(error, UserService);
-      throw new BadRequestException('注册失败');
+      throw new BadRequestException(HttpExceptionMsg.USER_REGISTER_ERROR);
     }
   }
 
@@ -70,12 +70,14 @@ export class UserService {
       where: { username },
     });
     if (!existUser) {
-      throw new BadRequestException('用户名或密码错误');
+      throw new BadRequestException(HttpExceptionMsg.USER_NOT_FOUND);
     }
 
     const isSame = comparePwdByHash(password, existUser.password);
     if (!isSame) {
-      throw new BadRequestException('用户名或密码错误');
+      throw new BadRequestException(
+        HttpExceptionMsg.USERNAME_OR_PASSWORD_ERROR,
+      );
     }
 
     delete existUser.password;
