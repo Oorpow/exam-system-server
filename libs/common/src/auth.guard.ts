@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 
 interface JwtUserData {
   userId: number;
@@ -35,6 +35,8 @@ export class AuthGuard implements CanActivate {
     if (skipAuth) return true;
 
     const request = context.switchToHttp().getRequest<Request>();
+    const response: Response = context.switchToHttp().getResponse();
+
     const token = this.extractTokenFromHeader(request);
     if (!token) {
       throw new UnauthorizedException();
@@ -45,6 +47,18 @@ export class AuthGuard implements CanActivate {
         secret: 'astrox',
       });
       request['user'] = payload;
+      response.header(
+        'token',
+        this.jwtService.sign(
+          {
+            userId: payload.userId,
+            username: payload.username,
+          },
+          {
+            expiresIn: '1d',
+          },
+        ),
+      );
     } catch (error) {
       throw new UnauthorizedException();
     }
