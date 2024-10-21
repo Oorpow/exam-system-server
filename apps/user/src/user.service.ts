@@ -7,7 +7,8 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { RegisterUserDto } from './dto/register.dto';
-import { genSaltAndHashPwd } from './utils';
+import { comparePwdByHash, genSaltAndHashPwd } from './utils';
+import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class UserService {
@@ -60,5 +61,24 @@ export class UserService {
       this.logger.error(error, UserService);
       throw new BadRequestException('注册失败');
     }
+  }
+
+  async login(loginDto: LoginDto) {
+    const { username, password } = loginDto;
+
+    const existUser = await this.prisma.user.findUnique({
+      where: { username },
+    });
+    if (!existUser) {
+      throw new BadRequestException('用户名或密码错误');
+    }
+
+    const isSame = comparePwdByHash(password, existUser.password);
+    if (!isSame) {
+      throw new BadRequestException('用户名或密码错误');
+    }
+
+    delete existUser.password;
+    return existUser;
   }
 }
