@@ -22,6 +22,15 @@ export class ExamService {
     });
   }
 
+  async findOne(examId: number, uid: number) {
+    return this.prisma.exam.findUnique({
+      where: {
+        id: examId,
+        createUserId: uid,
+      },
+    });
+  }
+
   async list(uid: number, bin: string) {
     let whereConditions = {};
 

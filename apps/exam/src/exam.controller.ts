@@ -19,6 +19,14 @@ import { PublishExamDto } from './dto/pubish-exam.dto';
 export class ExamController {
   constructor(private readonly examService: ExamService) {}
 
+  @Get(':id')
+  findOne(
+    @LoggedUser('userId') userId: number,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.examService.findOne(id, userId);
+  }
+
   @Get('list')
   list(@LoggedUser('userId') userId: number, @Query('bin') bin: string) {
     return this.examService.list(userId, bin);
