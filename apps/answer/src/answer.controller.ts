@@ -1,7 +1,18 @@
-import { Controller, Get, Inject } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Inject,
+  Param,
+  ParseIntPipe,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { AnswerService } from './answer.service';
+import { CreateAnswerDto } from './dto/create-answer.dto';
+import { LoggedUser } from '@app/common/custom.decorator';
 
 @Controller('answer')
 export class AnswerController {
@@ -9,6 +20,28 @@ export class AnswerController {
 
   @Inject('EXAM_SERVICE')
   private examClient: ClientProxy;
+
+  @Post()
+  create(
+    @Body() createAnswerDto: CreateAnswerDto,
+    @LoggedUser('userId') userId: number,
+  ) {
+    return this.answerService.create(createAnswerDto, userId);
+  }
+
+  @Get(':id')
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.answerService.findOne(id);
+  }
+
+  @Get('list')
+  async findAll(@Query('examId', ParseIntPipe) examId: number) {
+    return this.answerService.findAll(examId);
+  }
+
+  // TODO 成绩计算并更新
+
+  // TODO excel导出
 
   @Get()
   async getHello(): Promise<string> {
