@@ -39,8 +39,6 @@ export class AnswerController {
     return this.answerService.findAll(examId);
   }
 
-  // TODO 成绩计算并更新
-
   // TODO excel导出
 
   @Get()
