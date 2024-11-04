@@ -50,6 +50,7 @@ export class AuthGuard implements CanActivate {
       });
       request['user'] = payload;
       // 每次调用需要登录的接口时，自动刷新token实现续签
+      response.setHeader('Access-Control-Expose-Headers', 'token');
       response.header(
         'token',
         this.jwtService.sign(
