@@ -2,7 +2,7 @@ import { PrismaService } from '@app/prisma';
 import { Injectable } from '@nestjs/common';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { SaveExamDto } from './dto/save-exam.dto';
-import { PublishExamDto } from './dto/pubish-exam.dto';
+import { PublishExamOrNotDto } from './dto/publish-exam.dto';
 
 @Injectable()
 export class ExamService {
@@ -43,6 +43,7 @@ export class ExamService {
     } else {
       whereConditions = {
         createUserId: uid,
+        isDelete: false,
       };
     }
 
@@ -62,19 +63,19 @@ export class ExamService {
     });
   }
 
-  async publish(publishExamDto: PublishExamDto, uid: number) {
+  publishOrNot(publishExamOrNotDto: PublishExamOrNotDto, uid: number) {
     return this.prisma.exam.update({
       where: {
-        id: publishExamDto.id,
+        id: publishExamOrNotDto.id,
         createUserId: uid,
       },
       data: {
-        isPublish: true,
+        isPublish: publishExamOrNotDto.isPublish,
       },
     });
   }
 
-  async removeOne(uid: number, examId: number) {
+  async removeOne(examId: number, uid: number) {
     return this.prisma.exam.update({
       where: {
         id: examId,

@@ -13,11 +13,16 @@ import { MessagePattern } from '@nestjs/microservices';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { LoggedUser } from '@app/common/custom.decorator';
 import { SaveExamDto } from './dto/save-exam.dto';
-import { PublishExamDto } from './dto/pubish-exam.dto';
+import { PublishExamOrNotDto } from './dto/publish-exam.dto';
 
 @Controller('exam')
 export class ExamController {
   constructor(private readonly examService: ExamService) {}
+
+  @Get('list')
+  list(@LoggedUser('userId') userId: number, @Query('bin') bin: string) {
+    return this.examService.list(userId, bin);
+  }
 
   @Get(':id')
   findOne(
@@ -25,11 +30,6 @@ export class ExamController {
     @Param('id', ParseIntPipe) id: number,
   ) {
     return this.examService.findOne(id, userId);
-  }
-
-  @Get('list')
-  list(@LoggedUser('userId') userId: number, @Query('bin') bin: string) {
-    return this.examService.list(userId, bin);
   }
 
   @Post()
@@ -46,12 +46,12 @@ export class ExamController {
     return this.examService.save(saveExamDto);
   }
 
-  @Post('publish')
-  publish(
-    @Body() publishExamDto: PublishExamDto,
+  @Post('publishOrNot')
+  publishOrNot(
+    @Body() publishExamDto: PublishExamOrNotDto,
     @LoggedUser('userId') userId: number,
   ) {
-    return this.examService.publish(publishExamDto, userId);
+    return this.examService.publishOrNot(publishExamDto, userId);
   }
 
   @Delete(':id')

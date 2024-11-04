@@ -1,6 +1,9 @@
 import { IsNotEmpty } from 'class-validator';
 
-export class PublishExamDto {
+export class PublishExamOrNotDto {
   @IsNotEmpty({ message: 'exam id不能为空' })
   id: number;
+
+  @IsNotEmpty()
+  isPublish: boolean;
 }
